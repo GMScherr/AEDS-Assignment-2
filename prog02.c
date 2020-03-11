@@ -1,74 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
-//A code that can calculate the factorial of any large number n up to 10000
-//It's very much inefficient and should be optimized, but it works
-
-void copyArray (int *array, int *auxArray){//Copies array into auxArray
-	for (int i = 0;i<40000;i++)
-		auxArray[i] = array[i];
-}
-
-void ceilingFunction (int *array){//Grabs all numbers greater than 10 in any given array position and does a carryover operation
-	for (int i = 0;i<39999;i++){//Limit is 39999 because the position i+1 will be checked occasionally
-				if (array[i]>9){
-					array[i+1] = array[i+1] + (array[i]/10);
-					array[i] = array[i]%10;
-				}
-	}
-}
-
-void sumArray(int *array,int *auxArray){
-	for (int i = 0;i<40000;i++)
-		array[i] = array[i] + auxArray[i];
-}
-
-void multArray(int *array,int *auxArray,int num){
-	for (int i = 1;i < (num-1);i++){
-		sumArray(array,auxArray);
-		ceilingFunction(array);
-	}
-}
+//Code that is a lot better than the previous, with different logic
+//No longer does it take half a minute to perform 500!, it actually performs 10000! in a couple of seconds
 
 void printArray(int *array){
 	int i;
 	for (i = 40000;i>0;i--)
 		if (array[i]!=0)
 			break;
-	for (i;i>=0;i--)
+	for (;i>=0;i--)//Fun fact : this used to be for(i;i>=0;i--) but run.codes bitched about it and CLion considers it an unused integer
 		printf("%d",array[i]);
 	printf("\n");
 }
 
 void resetArray(int *array){
 	for(int i = 0;i<40000;i++)
-		array[i] = 0;//All positions are set as -1 for ease of reading the results once the operation is finished
+		array[i] = 0;
 }
 
-void numIntoArray(int num,int numSize,int *array){//Grabs any number of size numSize, decomposes it and writes it into the array
-	int i = 0;
-	while (num>0){
-		array[i]=num%10;
-		num = num/10;
-		i++;
-	}
-}
-
-int sizeOfNum(int num){//Checks how big the number num is(Example : returns 3 for num = 100, returns 4 if num = 1000)
-	int i = 0;
-	while (num>0){
-		i++;
-		num = num/10;
-	}
-	return i;
-}
-
-void fac(int *resultVector,int *auxVector,int num){//Function that does the operation proper
-	int numSize = sizeOfNum(num);
-	numIntoArray(num,numSize,auxVector);
-	numIntoArray(num,numSize,resultVector);
-	for (num;num>1;num--){
-		multArray(resultVector,auxVector,num);
-		copyArray(resultVector,auxVector);
+void fac(int *resultVector,int num){//Function that does the operation proper
+	resultVector[0] = 1;
+	int j,i;
+	for (j = 1;j<=num;j++){
+		for (i = 0;i<39999;i++){
+			resultVector[i]=resultVector[i]*j;
+		}
+		for(i = 0;i<39999;i++)
+			if(resultVector[i]>9){
+				resultVector[i+1]=resultVector[i+1]+(resultVector[i]/10);
+				resultVector[i]=resultVector[i]%10;
+			}
 	}
 	printf("Resultado: ");
 	printArray(resultVector);
@@ -77,16 +38,13 @@ void fac(int *resultVector,int *auxVector,int num){//Function that does the oper
 int main(){
 	int num;
 	int *resultVector;
-	int *auxVector;
 	resultVector = (int *) malloc(40000 * sizeof(int));//Vector is 40000 positions long since the largest number this program will support is 10!, which should have around 36000 positions. Otherwise, realloc() should be used
-	auxVector = (int *) malloc(40000 * sizeof(int));//Auxiliary vector will house the result of the previous operation so it can be added to the result vector
-	if((resultVector==NULL)||(auxVector==NULL)){
+	if(resultVector==NULL){
 		printf("Memory allocation failure!\n");//In case your PC can't allocate the memory, in which case the program will terminate itself
 		return 0;
 	}
 	resetArray(resultVector);
-	resetArray(auxVector);
 	printf("Digite um numero inteiro: ");
 	scanf("%d",&num);
-	fac (resultVector,auxVector,num);
+	fac (resultVector,num);
 }
